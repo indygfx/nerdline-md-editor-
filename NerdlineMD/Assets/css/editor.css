@@ -1,0 +1,27 @@
+/**
+ * Nerdline MD Editor - layout integration.
+ * Fits the EasyMDE side-by-side editor into Kanboard modals and forms.
+ */
+
+/* Full width inside Kanboard form rows and AJAX modals */
+.EasyMDEContainer {
+    width: 100%;
+}
+
+/* Editor height: compact but usable inside modals */
+.CodeMirror {
+    min-height: 200px;
+}
+
+/* Preview pane inherits Kanboard typography */
+.editor-preview-side,
+.editor-preview {
+    font-size: 0.95em;
+    padding: 10px 15px;
+}
+
+/* Side-by-side panes must not exceed the modal width */
+.CodeMirror-sided,
+.editor-preview-side {
+    width: 50% !important;
+}
