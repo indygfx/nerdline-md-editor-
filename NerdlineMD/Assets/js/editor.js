@@ -156,7 +156,8 @@
 
         var title = document.createElement('span');
         title.className = 'nerdline-md-preview-title';
-        title.textContent = 'Live preview';
+        title.innerHTML = '<i class="fa fa-columns"></i> ';
+        title.appendChild(document.createTextNode('Live preview'));
 
         var closeIcon = document.createElement('a');
         closeIcon.className = 'nerdline-md-preview-close';
@@ -178,6 +179,25 @@
 
         function refresh() {
             content.innerHTML = renderMarkdown(editor, editor.value());
+            syncHeight();
+        }
+
+        /**
+         * Keep the preview exactly as tall as the editor (task-form-main-
+         * column content), so both panes stay visually parallel and scroll
+         * at the same position while typing.
+         */
+        function syncHeight() {
+            var mainColumn = container.querySelector('.task-form-main-column');
+            if (!mainColumn) {
+                return;
+            }
+            var mainRect = mainColumn.getBoundingClientRect();
+            var containerRect = container.getBoundingClientRect();
+            var top = mainRect.top - containerRect.top;
+            panel.style.top = top + 'px';
+            panel.style.height = Math.max(1, Math.round(mainRect.height)) + 'px';
+            panel.style.maxHeight = 'none';
         }
 
         function reposition() {
@@ -194,6 +214,7 @@
         function show() {
             reposition();
             refresh();
+            syncHeight();
             panel.classList.add('is-open');
             open = true;
         }
@@ -221,6 +242,7 @@
         window.addEventListener('resize', function () {
             if (open) {
                 reposition();
+                syncHeight();
             }
         });
 
@@ -286,6 +308,16 @@
 
         previewPanel = createPreviewPanel(editor, textarea);
 
+        // EasyMDE renders custom toolbar buttons without an icon - inject
+        // the split-view (columns) symbol ourselves, matching the button
+        // that toggles the parallel preview.
+        var toolbarButton = textarea.parentNode.querySelector('.editor-toolbar button.' + TOOLBAR_BUTTON_CLASS);
+        if (toolbarButton && !toolbarButton.querySelector('i')) {
+            var icon = document.createElement('i');
+            icon.className = 'fa fa-columns';
+            toolbarButton.insertBefore(icon, toolbarButton.firstChild);
+        }
+
         // EasyMDE keeps the text in its CodeMirror instance and never
         // writes it back to the original textarea on its own. Kanboard
         // serializes the (hidden) textarea when saving the task, so the
@@ -298,6 +330,20 @@
                 previewPanel.refresh();
             }
         });
+
+        // Keep the overlay height locked to the editor (main column)
+        // while its content grows, so editor and preview always stay
+        // parallel and scroll at the same position.
+        var syncPreviewHeight = function () {
+            if (previewPanel.isOpen()) {
+                previewPanel.refresh();
+            }
+        };
+        var mainColumn = findContainer(textarea).querySelector('.task-form-main-column');
+        if (mainColumn && typeof ResizeObserver === 'function') {
+            var heightObserver = new ResizeObserver(syncPreviewHeight);
+            heightObserver.observe(mainColumn);
+        }
     }
 
     /**
