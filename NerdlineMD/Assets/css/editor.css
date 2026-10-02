@@ -25,3 +25,35 @@
 .editor-preview-side {
     width: 50% !important;
 }
+
+/*
+ * Modal layout: make room for the editor.
+ *
+ * Kanboard renders the task form as one main column next to two
+ * secondary columns. When our editor is attached, the two secondary
+ * columns are wrapped into a flex row so they sit side by side
+ * (50/50) and leave the editor the full modal width.
+ */
+.task-form-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0 15px;
+}
+
+/* Main column (title + editor) takes the full modal width */
+.task-form-main-column {
+    flex: 1 1 100%;
+    min-width: 0;
+}
+
+/* The two secondary columns share one row, 50/50 */
+.task-form-secondary-column {
+    flex: 1 1 calc(50% - 15px);
+    min-width: 220px;
+}
+
+/* Bottom area (submit buttons) on its own full-width row */
+.task-form-bottom {
+    flex: 1 1 100%;
+}
