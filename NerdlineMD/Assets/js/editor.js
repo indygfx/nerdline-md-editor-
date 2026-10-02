@@ -58,84 +58,73 @@
     }
 
     /**
-     * Measure the union of the secondary form columns. The preview
-     * overlay is placed exactly over this area, reusing the space
-     * Kanboard provides instead of resizing the form.
+     * Find the modal content element that defines the available width.
+     * Falls back to the form container when the editor is used outside
+     * of a Kanboard modal.
      * @param {HTMLElement} container
-     * @return {?{left:number, top:number, width:number, height:number}}
+     * @return {HTMLElement}
      */
-    function measureOverlayArea(container) {
-        var columns = container.querySelectorAll('.task-form-secondary-column');
-        if (!columns.length) {
-            return null;
+    function findWidthReference(container) {
+        var modalContent = document.getElementById('modal-content');
+        if (modalContent && container !== document.body && modalContent.contains(container)) {
+            return modalContent;
         }
-
-        var containerRect = container.getBoundingClientRect();
-        var left = Infinity;
-        var top = Infinity;
-        var right = -Infinity;
-        var bottom = -Infinity;
-
-        for (var i = 0; i < columns.length; i++) {
-            var r = columns[i].getBoundingClientRect();
-            if (r.width === 0 && r.height === 0) {
-                continue;
-            }
-            left = Math.min(left, r.left);
-            top = Math.min(top, r.top);
-            right = Math.max(right, r.right);
-            bottom = Math.max(bottom, r.bottom);
-        }
-
-        if (left === Infinity) {
-            return null;
-        }
-
-        return {
-            left: left - containerRect.left,
-            top: top - containerRect.top,
-            width: right - left,
-            height: bottom - top
-        };
+        return container;
     }
 
     /**
-     * Position the preview panel over the measured area, with a
-     * right-half fallback when no secondary columns exist.
+     * Available inner width of the modal content (padding removed),
+     * which editor and preview share 50/50.
+     * @param {HTMLElement} container
+     * @return {number}
+     */
+    function measureAvailableWidth(container) {
+        var reference = findWidthReference(container);
+        var style = window.getComputedStyle(reference);
+        var width = reference.getBoundingClientRect().width;
+        width -= parseFloat(style.paddingLeft) || 0;
+        width -= parseFloat(style.paddingRight) || 0;
+        return Math.max(1, width);
+    }
+
+    /**
+     * Split the available modal content width 50/50 between editor and
+     * preview, using the full space Kanboard provides.
      * @param {HTMLElement} panel
      * @param {HTMLElement} container
      * @param {HTMLElement} editorContainer
      */
     function positionPanel(panel, container, editorContainer) {
-        var area = measureOverlayArea(container);
+        var half = Math.floor(measureAvailableWidth(container) / 2);
 
-        if (area) {
-            panel.style.left = area.left + 'px';
-            panel.style.top = area.top + 'px';
-            panel.style.width = area.width + 'px';
-            panel.style.height = area.height + 'px';
-            panel.style.maxHeight = 'none';
-            return;
-        }
+        editorContainer.style.width = half + 'px';
+        panel.style.left = 'auto';
+        panel.style.right = '0';
+        panel.style.width = half + 'px';
+        syncPanelTop(panel, container, editorContainer);
+    }
 
-        if (container === document.body) {
-            panel.style.left = 'auto';
-            panel.style.top = '20px';
-            panel.style.right = '20px';
-            panel.style.width = '45%';
-            panel.style.height = 'auto';
-            panel.style.maxHeight = '80vh';
-            return;
-        }
-
+    /**
+     * Align the preview panel's top edge with the editor toolbar so
+     * both panes start at the same position.
+     * @param {HTMLElement} panel
+     * @param {HTMLElement} container
+     * @param {HTMLElement} editorContainer
+     */
+    function syncPanelTop(panel, container, editorContainer) {
         var containerRect = container.getBoundingClientRect();
         var editorRect = editorContainer.getBoundingClientRect();
-        panel.style.left = Math.round(containerRect.width / 2) + 'px';
         panel.style.top = (editorRect.top - containerRect.top) + 'px';
-        panel.style.right = 'auto';
-        panel.style.width = Math.round(containerRect.width / 2) + 'px';
-        panel.style.height = 'auto';
-        panel.style.maxHeight = Math.round(containerRect.height) + 'px';
+    }
+
+    /**
+     * Give the editor back the full available width when the preview
+     * panel is closed.
+     * @param {HTMLElement} container
+     * @param {HTMLElement} editorContainer
+     */
+    function restoreEditorWidth(container, editorContainer) {
+        editorContainer.style.width = measureAvailableWidth(container) + 'px';
     }
 
     /**
@@ -222,6 +211,7 @@
         function hide() {
             panel.classList.remove('is-open');
             open = false;
+            restoreEditorWidth(container, editorContainer);
         }
 
         function toggle() {
