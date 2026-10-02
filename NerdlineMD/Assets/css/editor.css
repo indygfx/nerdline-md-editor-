@@ -1,6 +1,7 @@
 /**
  * Nerdline MD Editor - layout integration.
- * Fits the EasyMDE side-by-side editor into Kanboard modals and forms.
+ * Fits the EasyMDE editor into Kanboard forms/modals and styles the
+ * live preview overlay that sits on top of the form's secondary columns.
  */
 
 /* Full width inside Kanboard form rows and AJAX modals */
@@ -24,4 +25,57 @@
 .CodeMirror-sided,
 .editor-preview-side {
     width: 50% !important;
+}
+
+/* Live preview toggle button in the toolbar */
+.editor-toolbar button.nerdline-live-preview {
+    color: #566b8d;
+}
+
+/* Live preview overlay panel */
+.nerdline-md-preview {
+    display: none;
+    position: absolute;
+    z-index: 100;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid #d5d5d5;
+    border-radius: 4px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+}
+
+.nerdline-md-preview.is-open {
+    display: flex;
+}
+
+.nerdline-md-preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    background: #f5f5f5;
+    border-bottom: 1px solid #d5d5d5;
+}
+
+.nerdline-md-preview-title {
+    font-weight: bold;
+    color: #333;
+}
+
+.nerdline-md-preview-close {
+    color: #666;
+    padding: 2px 4px;
+}
+
+.nerdline-md-preview-close:hover {
+    color: #000;
+}
+
+.nerdline-md-preview-content {
+    flex: 1;
+    overflow: auto;
+    padding: 10px 15px;
+    font-size: 0.95em;
+    -webkit-overflow-scrolling: touch;
 }
