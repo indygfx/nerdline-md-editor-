@@ -47,9 +47,13 @@
     min-width: 0;
 }
 
-/* The two secondary columns share one row, 50/50 */
+/* The two secondary columns share one row, 50/50. Kanboard caps
+   these columns at 250px via width/max-width - remove the cap so
+   the 50/50 split of the modal actually takes effect. */
 .task-form-secondary-column {
     flex: 1 1 calc(50% - 15px);
+    width: auto !important;
+    max-width: none !important;
     min-width: 220px;
 }
 
