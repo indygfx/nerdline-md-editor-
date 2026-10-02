@@ -63,6 +63,6 @@ class Plugin extends Base
 
     public function getCompatibleVersion()
     {
-        return '1.2.33';
+        return '>=1.2.33';
     }
 }
