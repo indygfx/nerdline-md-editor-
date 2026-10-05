@@ -67,3 +67,11 @@
 .task-form-bottom {
     flex: 1 1 100%;
 }
+
+.EasyMDEContainer .editor-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #fff;
+    border-bottom: 1px solid #ced4da;
+}
