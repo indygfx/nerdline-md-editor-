@@ -25,3 +25,9 @@
 .editor-preview-side {
     width: 50% !important;
 }
+
+/* Highlight flash for the headline jump triggered by .nmsclickme clicks */
+.CodeMirror-linebackground.nerdline-md-flash {
+    background-color: #fff3a3;
+    transition: background-color 1s ease;
+}

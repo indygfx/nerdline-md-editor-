@@ -47,3 +47,29 @@ The vendored files originate from the [EasyMDE](https://github.com/Ionaru/easy-m
 
 - Comment textareas (decided against for v0.0.1)
 - Config toggle per project or user (currently always-on for descriptions)
+
+## Headline jump from rendered descriptions
+
+Rendered task descriptions can contain clickable edit icons
+(`.nmsclickme`) next to each headline. When such an icon is clicked, the
+page opens the description editor and puts the clicked headline into the
+global variable `window.datacontentclicked` (HTML-encoded headline text,
+e.g. `<strong>2. Asbest…</strong>`).
+
+Once the editor has attached, the plugin automatically:
+
+1. Decodes the headline (`&amp;` → `&`, tags stripped).
+2. Normalizes the markdown lines of the document (drops `#`, `**`, `_`,
+   `` ` `, `~~` markup).
+3. Scrolls the CodeMirror view to the matching headline line, places the
+   cursor there and flashes the line for ~1.5 s.
+
+The global variable is consumed after a successful jump. There is also a
+public API for direct calls, e.g. from your own click handler:
+
+```js
+NerdlineMD.jumpToHeadline('<strong>2. Asbest-Beseitigung &amp; Rückbau der Waschküche</strong>');
+```
+
+Both exact matches and substring fallbacks are supported; if no headline
+matches, the editor simply opens at the last cursor position.
