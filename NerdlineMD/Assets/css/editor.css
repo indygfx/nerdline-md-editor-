@@ -33,6 +33,21 @@
 }
 
 /*
+ * Sticky toolbar: keep the EasyMDE toolbar visible while scrolling
+ * inside the editor, so it is never lost while working. Sticky keeps
+ * the toolbar in the document flow - width and horizontal position
+ * stay correct in side-by-side mode and after resizes, without any
+ * JavaScript scroll handling.
+ */
+.EasyMDEContainer .editor-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #fff;
+    border-bottom: 1px solid #ced4da;
+}
+
+/*
  * Modal layout: make room for the editor.
  *
  * Kanboard renders the task form as one main column next to two
