@@ -73,3 +73,31 @@ NerdlineMD.jumpToHeadline('<strong>2. Asbest-Beseitigung &amp; Rückbau der Wasc
 
 Both exact matches and substring fallbacks are supported; if no headline
 matches, the editor simply opens at the last cursor position.
+
+## Editor behavior in forms
+
+- **Kanboard's default markdown toolbar** (`.text-editor-toolbar`) is hidden
+  for every textarea our editor attaches to, so only the EasyMDE toolbar
+  remains.
+- **Sticky toolbar:** the EasyMDE toolbar stays visible while scrolling
+  inside the editor (sticky keeps width/position correct in side-by-side
+  mode and after resizes, without JavaScript scroll handling).
+- **Strikethrough:** the toolbar includes a strikethrough button (`~~text~~`).
+
+## Floating save button
+
+While editing long descriptions the form's real submit buttons are
+scrolled out of view. The plugin adds a floating "Save" button at the
+bottom left of the modal:
+
+- It slides up into view only while scrolling **down** and the regular
+  submit buttons are out of sight.
+- A timer (~2.5 s) slides it back down; further downward scrolling
+  brings it up again.
+- Any upward scrolling hides it immediately.
+- Clicking it submits the surrounding form through Kanboard's regular
+  save logic (values are already mirrored to the original textarea on
+  every change).
+
+The scroll container is detected dynamically (Kanboard modals scroll in
+`#modal-box`, regular pages fall back to `window`).
