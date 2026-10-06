@@ -149,6 +149,82 @@
         return false;
     }
 
+    var HIDE_CLASS = 'nerdline-md-hidden';
+    var VISIBLE_CLASS = 'nerdline-md-visible';
+    var SAVE_HIDE_DELAY = 2500;
+    var SCROLL_TRIGGER_LINES = 15;
+
+    /**
+     * Hide Kanboard's default markdown toolbar that belongs to the
+     * given textarea. The toolbar precedes the textarea inside the
+     * same parent, so the previous sibling is checked. Only the
+     * matched toolbar gets the class - other text-editor toolbars
+     * on the page stay untouched.
+     * @param {HTMLTextAreaElement} textarea
+     */
+    function hideKanboardToolbar(textarea) {
+        var prev = textarea.previousElementSibling;
+        while (prev && prev !== textarea) {
+            if (prev.classList && prev.classList.contains('text-editor-toolbar')) {
+                prev.classList.add(HIDE_CLASS);
+                return;
+            }
+            prev = prev.previousElementSibling;
+        }
+    }
+
+    /**
+     * Show a floating save button at the bottom left on top of the
+     * editor while the user scrolls down inside the document. A timer
+     * hides it again; scrolling down re-triggers the show. Clicking it
+     * submits the surrounding form (Kanboard's regular save logic).
+     * @param {EasyMDE} editor
+     */
+    function setupFloatingSave(editor) {
+        var container = editor.gui.toolbar.parentNode;
+        if (!container || container.querySelector('.nerdline-md-floating-save')) {
+            return;
+        }
+
+        var form = editor.element.form || editor.element.closest('form');
+        if (!form) {
+            return;
+        }
+
+        container.style.position = 'relative';
+
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'nerdline-md-floating-save';
+        button.textContent = 'Save';
+        container.appendChild(button);
+
+        button.addEventListener('click', function () {
+            form.submit();
+        });
+
+        var hideTimer = null;
+
+        function show() {
+            button.classList.add(VISIBLE_CLASS);
+            if (hideTimer) {
+                clearTimeout(hideTimer);
+            }
+            hideTimer = setTimeout(function () {
+                button.classList.remove(VISIBLE_CLASS);
+                hideTimer = null;
+            }, SAVE_HIDE_DELAY);
+        }
+
+        editor.codemirror.on('scroll', function (cm) {
+            var scrollInfo = cm.getScrollInfo();
+            // Only react to downward scrolling past the trigger depth
+            if (scrollInfo.top > SCROLL_TRIGGER_LINES * cm.defaultTextHeight()) {
+                show();
+            }
+        });
+    }
+
     /**
      * Create an EasyMDE instance on the given textarea.
      * @param {HTMLTextAreaElement} textarea
@@ -167,7 +243,7 @@
             status: false,
             autoDownloadFontAwesome: false,
             toolbar: [
-                'bold', 'italic', 'heading', '|',
+                'bold', 'italic', 'strikethrough', 'heading', '|',
                 'unordered-list', 'ordered-list', 'quote', '|',
                 'link', 'image', 'code', 'table', '|',
                 'preview', 'side-by-side', '|',
@@ -180,6 +256,8 @@
             }
 
          });
+
+        hideKanboardToolbar(textarea);
 
         editors.push(editor);
 
@@ -200,6 +278,8 @@
                 window.datacontentclicked = null;
             }
         }, 150);
+
+        setupFloatingSave(editor);
     }
 
     /**

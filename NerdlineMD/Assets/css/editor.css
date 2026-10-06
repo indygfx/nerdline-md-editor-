@@ -33,6 +33,21 @@
 }
 
 /*
+ * Sticky toolbar: keep the EasyMDE toolbar visible while scrolling
+ * inside the editor, so it is never lost while working. Sticky keeps
+ * the toolbar in the document flow - width and horizontal position
+ * stay correct in side-by-side mode and after resizes, without any
+ * JavaScript scroll handling.
+ */
+.EasyMDEContainer .editor-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #fff;
+    border-bottom: 1px solid #ced4da;
+}
+
+/*
  * Modal layout: make room for the editor.
  *
  * Kanboard renders the task form as one main column next to two
@@ -68,10 +83,42 @@
     flex: 1 1 100%;
 }
 
-.EasyMDEContainer .editor-toolbar {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: #fff;
-    border-bottom: 1px solid #ced4da;
+/* Hide Kanboard's default markdown toolbar where our editor is attached.
+   The selector is set from JS (nerdline-md-hide-toolbar) so only the toolbars
+   belonging to an EasyMDE-attached textarea are hidden, not every toolbar. */
+.text-editor-toolbar.nerdline-md-hidden {
+    display: none !important;
+}
+
+/*
+ * Floating save button: appears at the bottom left on top of the editor
+ * while the user scrolls down inside the document, fades out after a
+ * timeout. Clicking it submits the surrounding form like the regular
+ * save button does.
+ */
+.nerdline-md-floating-save {
+    position: absolute;
+    left: 10px;
+    bottom: 45px;
+    z-index: 30;
+    display: inline-block;
+    padding: 6px 14px;
+    background: #000;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 1em;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.nerdline-md-floating-save.nerdline-md-visible {
+    opacity: 0.9;
+    visibility: visible;
+}
+
+.nerdline-md-floating-save:hover {
+    opacity: 1;
 }
