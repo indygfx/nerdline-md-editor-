@@ -152,7 +152,6 @@
     var HIDE_CLASS = 'nerdline-md-hidden';
     var VISIBLE_CLASS = 'nerdline-md-visible';
     var SAVE_HIDE_DELAY = 2500;
-    var SCROLL_TRIGGER_LINES = 15;
 
     /**
      * Hide Kanboard's default markdown toolbar that belongs to the
@@ -174,10 +173,32 @@
     }
 
     /**
-     * Show a floating save button at the bottom left on top of the
-     * editor while the user scrolls down inside the document. A timer
-     * hides it again; scrolling down re-triggers the show. Clicking it
-     * submits the surrounding form (Kanboard's regular save logic).
+     * Find the closest scrollable ancestor of the given element.
+     * Kanboard modals scroll in #modal-box, regular pages in window.
+     * @param {HTMLElement} el
+     * @return {HTMLElement|Window} the scrolling container
+     */
+    function findScrollContainer(el) {
+        var node = el.parentNode;
+        while (node && node !== document.body) {
+            if (node instanceof HTMLElement) {
+                var style = window.getComputedStyle(node);
+                var overflowY = style.overflowY;
+                var scrolls = (overflowY === 'auto' || overflowY === 'scroll');
+                if (scrolls && node.scrollHeight > node.clientHeight) {
+                    return node;
+                }
+            }
+            node = node.parentNode;
+        }
+        return window;
+    }
+
+    /**
+     * Show a floating save button at the bottom left of the modal while
+     * the user scrolls down and the form's submit buttons are scrolled
+     * out of view. A timer hides it again; scrolling down re-triggers the
+     * show. Clicking it submits the surrounding form (Kanboard's save).
      * @param {EasyMDE} editor
      */
     function setupFloatingSave(editor) {
@@ -191,7 +212,8 @@
             return;
         }
 
-        container.style.position = 'relative';
+        var submitButtons = form.querySelector('.form-actions');
+        var scrollContainer = findScrollContainer(container);
 
         var button = document.createElement('button');
         button.type = 'button';
@@ -203,9 +225,24 @@
             form.submit();
         });
 
+        function positionButton() {
+            // Anchor to the scroll container (modal box) or the viewport
+            var rect;
+            if (scrollContainer instanceof HTMLElement) {
+                rect = scrollContainer.getBoundingClientRect();
+                button.style.left = (rect.left + 10) + 'px';
+                button.style.bottom = (window.innerHeight - rect.bottom + 10) + 'px';
+            } else {
+                button.style.left = '10px';
+                button.style.bottom = '10px';
+            }
+        }
+
         var hideTimer = null;
+        var lastTriggered = 0;
 
         function show() {
+            positionButton();
             button.classList.add(VISIBLE_CLASS);
             if (hideTimer) {
                 clearTimeout(hideTimer);
@@ -216,13 +253,36 @@
             }, SAVE_HIDE_DELAY);
         }
 
-        editor.codemirror.on('scroll', function (cm) {
-            var scrollInfo = cm.getScrollInfo();
-            // Only react to downward scrolling past the trigger depth
-            if (scrollInfo.top > SCROLL_TRIGGER_LINES * cm.defaultTextHeight()) {
-                show();
+        function onScroll() {
+            if (!submitButtons || !submitButtons.isConnected) {
+                return;
             }
-        });
+            var box = submitButtons.getBoundingClientRect();
+            var viewTop = 0;
+            var viewBottom = window.innerHeight;
+            if (scrollContainer instanceof HTMLElement) {
+                var containerRect = scrollContainer.getBoundingClientRect();
+                viewTop = containerRect.top;
+                viewBottom = containerRect.bottom;
+            }
+            var buttonsVisible = box.bottom > viewTop && box.top < viewBottom;
+            if (!buttonsVisible) {
+                var now = Date.now();
+                // Only re-trigger after the hide animation finished,
+                // otherwise every scroll pixel restarts the timer
+                if (!button.classList.contains(VISIBLE_CLASS) || now - lastTriggered > SAVE_HIDE_DELAY) {
+                    lastTriggered = now;
+                    show();
+                }
+            }
+        }
+
+        if (scrollContainer instanceof HTMLElement) {
+            scrollContainer.addEventListener('scroll', onScroll);
+        } else {
+            window.addEventListener('scroll', onScroll, true);
+        }
+        window.addEventListener('resize', positionButton);
     }
 
     /**
