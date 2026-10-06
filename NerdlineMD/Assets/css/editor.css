@@ -97,11 +97,11 @@
  * Clicking it submits the surrounding form (Kanboard's save logic).
  */
 .nerdline-md-floating-save {
-    position: fixed;
+    position: sticky;
     z-index: 1300;
     display: inline-block;
-    padding: 6px 14px;
-    background: #000;
+    padding: 10px 24px;
+    background: #3079ed;
     color: #fff;
     border: none;
     border-radius: 3px;
