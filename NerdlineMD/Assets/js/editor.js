@@ -240,6 +240,9 @@
 
         var hideTimer = null;
         var lastTriggered = 0;
+        var lastScrollTop = scrollContainer instanceof HTMLElement
+            ? scrollContainer.scrollTop
+            : (window.scrollY || window.pageYOffset);
 
         function hide() {
             if (hideTimer) {
@@ -261,10 +264,27 @@
             }, SAVE_HIDE_DELAY);
         }
 
+        function currentScrollTop() {
+            return scrollContainer instanceof HTMLElement
+                ? scrollContainer.scrollTop
+                : (window.scrollY || window.pageYOffset);
+        }
+
         function onScroll() {
             if (!submitButtons || !submitButtons.isConnected) {
                 return;
             }
+
+            var scrollTop = currentScrollTop();
+            var scrollingUp = scrollTop < lastScrollTop;
+            lastScrollTop = scrollTop;
+
+            // Any upward scrolling hides the button immediately
+            if (scrollingUp) {
+                hide();
+                return;
+            }
+
             var box = submitButtons.getBoundingClientRect();
             var viewTop = 0;
             var viewBottom = window.innerHeight;
