@@ -241,6 +241,14 @@
         var hideTimer = null;
         var lastTriggered = 0;
 
+        function hide() {
+            if (hideTimer) {
+                clearTimeout(hideTimer);
+                hideTimer = null;
+            }
+            button.classList.remove(VISIBLE_CLASS);
+        }
+
         function show() {
             positionButton();
             button.classList.add(VISIBLE_CLASS);
@@ -274,6 +282,10 @@
                     lastTriggered = now;
                     show();
                 }
+            } else {
+                // Scrolled back up to the regular submit buttons:
+                // hide the floating button immediately
+                hide();
             }
         }
 
