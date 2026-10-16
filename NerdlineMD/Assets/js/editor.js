@@ -113,13 +113,11 @@
      */
     function jumpFromGlobalVar() {
         var clicked = window.datacontentclicked;
-        console.log('[NerdlineMD] jumpFromGlobalVar - clicked:', clicked, 'editors registered:', editors.length);
         if (!clicked) {
             return false;
         }
 
         var headlineText = htmlToPlainText(String(clicked));
-        console.log('[NerdlineMD] decoded headline:', JSON.stringify(headlineText));
         if (!headlineText) {
             return false;
         }
@@ -139,7 +137,7 @@
         for (var j = 0; j < live.length; j++) {
             editors.push(live[j]);
         }
-        console.log('[NerdlineMD] live editors after prune:', editors.length);
+
 
         // Prefer editors inside the currently open modal
         var modalContent = document.getElementById('modal-content');
@@ -157,7 +155,6 @@
                 return true;
             }
         }
-        console.log('[NerdlineMD] no matching headline line found in', editors.length, 'live editor(s)');
         return false;
     }
 
@@ -195,18 +192,13 @@
      * the jump cannot be tied to the attach step alone.
      */
     function queueHeadlineJump() {
-        console.log('[NerdlineMD] queueHeadlineJump called, datacontentclicked:', window.datacontentclicked);
         if (pendingJumpTimer) {
             clearTimeout(pendingJumpTimer);
         }
         pendingJumpTimer = setTimeout(function () {
             pendingJumpTimer = null;
-            console.log('[NerdlineMD] jump timer fired, datacontentclicked:', window.datacontentclicked);
             if (jumpFromGlobalVar()) {
                 window.datacontentclicked = null;
-                console.log('[NerdlineMD] jump successful, variable consumed');
-            } else {
-                console.log('[NerdlineMD] jump NOT executed (no variable, no editor, or no match)');
             }
         }, 150);
     }
@@ -433,7 +425,6 @@
      */
     function scan() {
         var textareas = document.querySelectorAll('textarea[name="description"]');
-        console.log('[NerdlineMD] scan - textareas:', textareas.length, 'datacontentclicked:', window.datacontentclicked);
         for (var i = 0; i < textareas.length; i++) {
             attachEditor(textareas[i]);
         }
