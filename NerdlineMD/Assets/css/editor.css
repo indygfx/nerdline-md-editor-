@@ -124,3 +124,45 @@
 .nerdline-md-floating-save:hover {
     opacity: 1;
 }
+
+/*
+ * Floating scroll-down button: same presentation logic as the save
+ * button (slide up on downward scrolling, slide down on hide), but an
+ * icon-only round button at the bottom right. Appears when the task
+ * settings below the editor are out of view; click scrolls to them.
+ */
+.nerdline-md-scroll-down {
+    position: fixed;
+    z-index: 1300;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: #3079ed;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    opacity: 1;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(150%);
+    transition: transform 0.3s ease-in-out, visibility 0s linear 0.3s;
+}
+
+.nerdline-md-scroll-down.nerdline-md-visible {
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+    transition: transform 0.3s ease-in-out;
+}
+
+.nerdline-md-scroll-down:hover {
+    background: #2563c9;
+}
+
+.nerdline-md-scroll-down svg {
+    display: block;
+}
