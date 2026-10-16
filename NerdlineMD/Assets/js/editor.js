@@ -386,12 +386,8 @@
 
         // If the editor was opened because a .nmsclickme edit icon was
         // clicked, the page has put the clicked headline into the global
-        // `datacontentclicked`. Jump to that headline and consume it.
-        setTimeout(function () {
-            if (jumpFromGlobalVar()) {
-                window.datacontentclicked = null;
-            }
-        }, 150);
+        // `datacontentclicked`. Queue the jump (debounced).
+        queueHeadlineJump();
 
         setupFloatingSave(editor);
     }
@@ -404,6 +400,11 @@
         for (var i = 0; i < textareas.length; i++) {
             attachEditor(textareas[i]);
         }
+
+        // Modal was (re)opened with a pending headline jump - the editor
+        // may already be attached from a previous open, so re-check on
+        // every scan instead of only at attach time.
+        queueHeadlineJump();
     }
 
     // Initial run for statically rendered forms (task creation page)
