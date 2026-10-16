@@ -293,6 +293,23 @@
      * show. Clicking it submits the surrounding form (Kanboard's save).
      * @param {EasyMDE} editor
      */
+    /**
+     * Shared wrapper for the floating buttons (save left, scroll-down
+     * right) so both sit on the same line at the bottom of the editor
+     * container, with the same sticky behavior.
+     * @param {HTMLElement} container EasyMDE container element
+     * @return {HTMLElement} the button wrapper element
+     */
+    function getFloatingButtonWrapper(container) {
+        var wrapper = container.querySelector('.nerdline-md-floating-buttons');
+        if (!wrapper) {
+            wrapper = document.createElement('div');
+            wrapper.className = 'nerdline-md-floating-buttons';
+            container.appendChild(wrapper);
+        }
+        return wrapper;
+    }
+
     function setupFloatingSave(editor) {
         var container = editor.gui.toolbar.parentNode;
         if (!container || container.querySelector('.nerdline-md-floating-save')) {
@@ -311,7 +328,7 @@
         button.type = 'button';
         button.className = 'nerdline-md-floating-save';
         button.textContent = 'Save';
-        container.appendChild(button);
+        getFloatingButtonWrapper(container).appendChild(button);
 
         button.addEventListener('click', function () {
             form.submit();
@@ -421,7 +438,7 @@
         button.title = 'Scroll to task settings';
         button.setAttribute('aria-label', 'Scroll to task settings');
         button.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>';
-        container.appendChild(button);
+        getFloatingButtonWrapper(container).appendChild(button);
 
         button.addEventListener('click', function () {
             if (target && target.isConnected) {

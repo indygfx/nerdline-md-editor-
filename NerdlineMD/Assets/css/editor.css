@@ -126,20 +126,36 @@
 }
 
 /*
- * Floating scroll-down button: same presentation and positioning logic
- * as the save button (sticky inside the editor container, slides up on
- * downward scrolling, slides down on hide). Icon-only round button at
- * the bottom right of the editor. Appears when the task settings below
+ * Floating buttons wrapper: holds save (left) and scroll-down (right)
+ * on the same line at the bottom of the editor container, both with
+ * the same sticky behavior and slide logic.
+ */
+.nerdline-md-floating-buttons {
+    position: sticky;
+    bottom: 0;
+    z-index: 1300;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    pointer-events: none;
+}
+
+.nerdline-md-floating-buttons > button {
+    pointer-events: auto;
+}
+
+/*
+ * Floating scroll-down button: icon-only round button at the right
+ * edge, same slide logic as the save button (slides up on downward
+ * scrolling, slides down on hide). Appears when the task settings below
  * the editor are out of view; click scrolls to them.
  */
 .nerdline-md-scroll-down {
-    position: sticky;
-    z-index: 1300;
+    width: 40px;
+    height: 40px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
     background: #3079ed;
     color: #fff;
     border: none;
@@ -151,8 +167,6 @@
     pointer-events: none;
     transform: translateY(150%);
     transition: transform 0.3s ease-in-out, visibility 0s linear 0.3s;
-    float: right;
-    margin-right: 10px;
 }
 
 .nerdline-md-scroll-down.nerdline-md-visible {
@@ -169,3 +183,4 @@
 .nerdline-md-scroll-down svg {
     display: block;
 }
+
