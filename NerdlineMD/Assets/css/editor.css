@@ -98,6 +98,7 @@
  */
 .nerdline-md-floating-save {
     display: inline-block;
+    margin-left: 32px;
     padding: 10px 24px;
     background: #3079ed;
     color: #fff;
