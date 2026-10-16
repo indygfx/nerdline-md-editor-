@@ -161,25 +161,65 @@
     border-radius: 50%;
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    opacity: 1;
+    opacity: 0.5;
     visibility: hidden;
     pointer-events: none;
     transform: translateY(150%);
-    transition: transform 0.3s ease-in-out, visibility 0s linear 0.3s;
+    transition: transform 0.3s ease-in-out, opacity 0.2s ease, visibility 0s linear 0.3s;
 }
 
 .nerdline-md-scroll-down.nerdline-md-visible {
     visibility: visible;
     pointer-events: auto;
     transform: translateY(0);
-    transition: transform 0.3s ease-in-out;
+    transition: transform 0.3s ease-in-out, opacity 0.2s ease;
 }
 
 .nerdline-md-scroll-down:hover {
     background: #2563c9;
+    opacity: 1;
 }
 
 .nerdline-md-scroll-down svg {
     display: block;
 }
+
+/*
+ * Fancy JS tooltip for the floating buttons. One shared element,
+ * positioned above the hovered button via fixed coordinates, with a
+ * little speech-bubble arrow and a fade/slide transition.
+ */
+.nerdline-md-tooltip {
+    position: fixed;
+    z-index: 1400;
+    padding: 6px 12px;
+    background: #1f2733;
+    color: #fff;
+    font-size: 0.85em;
+    font-family: Consolas, Monaco, monospace;
+    letter-spacing: 0.05em;
+    border-radius: 4px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.nerdline-md-tooltip.nerdline-md-tooltip-visible {
+    opacity: 0.95;
+    transform: translateY(0);
+}
+
+.nerdline-md-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px 5px 0;
+    border-style: solid;
+    border-color: #1f2733 transparent transparent;
+}
+
 
