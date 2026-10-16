@@ -153,6 +153,28 @@
     var VISIBLE_CLASS = 'nerdline-md-visible';
     var SAVE_HIDE_DELAY = 2500;
 
+    // Deferred headline jump. Runs on a short timer so the modal and the
+    // editor are fully rendered when the CodeMirror position is measured.
+    var pendingJumpTimer = null;
+
+    /**
+     * Queue the headline jump from `window.datacontentclicked`. Called
+     * whenever the DOM changes (modal opened/reopened) and when a new
+     * editor attaches - Kanboard reuses the modal DOM on re-opening, so
+     * the jump cannot be tied to the attach step alone.
+     */
+    function queueHeadlineJump() {
+        if (pendingJumpTimer) {
+            clearTimeout(pendingJumpTimer);
+        }
+        pendingJumpTimer = setTimeout(function () {
+            pendingJumpTimer = null;
+            if (jumpFromGlobalVar()) {
+                window.datacontentclicked = null;
+            }
+        }, 150);
+    }
+
     /**
      * Hide Kanboard's default markdown toolbar that belongs to the
      * given textarea. The toolbar precedes the textarea inside the
