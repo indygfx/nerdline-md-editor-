@@ -400,6 +400,10 @@
         var lastTriggered = 0;
         var lastScrollTop = currentScrollTopOf(scrollContainer);
 
+        // Hover pause: while the mouse rests on the button, the hide
+        // timer is paused; on mouseleave it resumes with the full delay.
+        var hoverPaused = false;
+
         function hide() {
             if (hideTimer) {
                 clearTimeout(hideTimer);
@@ -414,11 +418,36 @@
             if (hideTimer) {
                 clearTimeout(hideTimer);
             }
-            hideTimer = setTimeout(function () {
-                button.classList.remove(VISIBLE_CLASS);
-                hideTimer = null;
-            }, SAVE_HIDE_DELAY);
+            if (!hoverPaused) {
+                hideTimer = setTimeout(function () {
+                    if (hoverPaused) {
+                        return;
+                    }
+                    button.classList.remove(VISIBLE_CLASS);
+                    hideTimer = null;
+                }, SAVE_HIDE_DELAY);
+            }
         }
+
+        button.addEventListener('mouseenter', function () {
+            hoverPaused = true;
+            if (hideTimer) {
+                clearTimeout(hideTimer);
+                hideTimer = null;
+            }
+        });
+        button.addEventListener('mouseleave', function () {
+            hoverPaused = false;
+            if (button.classList.contains(VISIBLE_CLASS)) {
+                hideTimer = setTimeout(function () {
+                    if (hoverPaused) {
+                        return;
+                    }
+                    button.classList.remove(VISIBLE_CLASS);
+                    hideTimer = null;
+                }, SAVE_HIDE_DELAY);
+            }
+        });
 
         function onScroll() {
             if (!submitButtons || !submitButtons.isConnected) {
@@ -514,6 +543,10 @@
         var lastTriggered = 0;
         var lastScrollTop = currentScrollTopOf(scrollContainer);
 
+        // Hover pause: while the mouse rests on the button, the hide
+        // timer is paused; on mouseleave it resumes with the full delay.
+        var hoverPaused = false;
+
         function hide() {
             if (hideTimer) {
                 clearTimeout(hideTimer);
@@ -527,11 +560,36 @@
             if (hideTimer) {
                 clearTimeout(hideTimer);
             }
-            hideTimer = setTimeout(function () {
-                button.classList.remove(VISIBLE_CLASS);
-                hideTimer = null;
-            }, SAVE_HIDE_DELAY);
+            if (!hoverPaused) {
+                hideTimer = setTimeout(function () {
+                    if (hoverPaused) {
+                        return;
+                    }
+                    button.classList.remove(VISIBLE_CLASS);
+                    hideTimer = null;
+                }, SAVE_HIDE_DELAY);
+            }
         }
+
+        button.addEventListener('mouseenter', function () {
+            hoverPaused = true;
+            if (hideTimer) {
+                clearTimeout(hideTimer);
+                hideTimer = null;
+            }
+        });
+        button.addEventListener('mouseleave', function () {
+            hoverPaused = false;
+            if (button.classList.contains(VISIBLE_CLASS)) {
+                hideTimer = setTimeout(function () {
+                    if (hoverPaused) {
+                        return;
+                    }
+                    button.classList.remove(VISIBLE_CLASS);
+                    hideTimer = null;
+                }, SAVE_HIDE_DELAY);
+            }
+        });
 
         function onScroll() {
             if (!target || !target.isConnected) {
