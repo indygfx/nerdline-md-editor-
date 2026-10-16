@@ -126,13 +126,14 @@
 }
 
 /*
- * Floating scroll-down button: same presentation logic as the save
- * button (slide up on downward scrolling, slide down on hide), but an
- * icon-only round button at the bottom right. Appears when the task
- * settings below the editor are out of view; click scrolls to them.
+ * Floating scroll-down button: same presentation and positioning logic
+ * as the save button (sticky inside the editor container, slides up on
+ * downward scrolling, slides down on hide). Icon-only round button at
+ * the bottom right of the editor. Appears when the task settings below
+ * the editor are out of view; click scrolls to them.
  */
 .nerdline-md-scroll-down {
-    position: fixed;
+    position: sticky;
     z-index: 1300;
     display: inline-flex;
     align-items: center;
@@ -150,6 +151,8 @@
     pointer-events: none;
     transform: translateY(150%);
     transition: transform 0.3s ease-in-out, visibility 0s linear 0.3s;
+    float: right;
+    margin-right: 10px;
 }
 
 .nerdline-md-scroll-down.nerdline-md-visible {

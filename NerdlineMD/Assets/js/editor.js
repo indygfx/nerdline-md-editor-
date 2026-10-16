@@ -433,10 +433,6 @@
             }
         });
 
-        function positionButton() {
-            positionFloatingButton(button, scrollContainer, 'right');
-        }
-
         var hideTimer = null;
         var lastTriggered = 0;
         var lastScrollTop = currentScrollTopOf(scrollContainer);
@@ -450,7 +446,6 @@
         }
 
         function show() {
-            positionButton();
             button.classList.add(VISIBLE_CLASS);
             if (hideTimer) {
                 clearTimeout(hideTimer);
@@ -502,7 +497,6 @@
         } else {
             window.addEventListener('scroll', onScroll, true);
         }
-        window.addEventListener('resize', positionButton);
     }
 
     /**
