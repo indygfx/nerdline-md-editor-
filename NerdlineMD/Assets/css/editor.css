@@ -97,8 +97,6 @@
  * Clicking it submits the surrounding form (Kanboard's save logic).
  */
 .nerdline-md-floating-save {
-    position: sticky;
-    z-index: 1300;
     display: inline-block;
     padding: 10px 24px;
     background: #3079ed;
@@ -132,7 +130,7 @@
  */
 .nerdline-md-floating-buttons {
     position: sticky;
-    bottom: 0;
+    bottom: 32px;
     z-index: 1300;
     display: flex;
     justify-content: space-between;
@@ -153,6 +151,7 @@
 .nerdline-md-scroll-down {
     width: 40px;
     height: 40px;
+    margin-right: 32px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
