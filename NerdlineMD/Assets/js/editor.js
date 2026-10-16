@@ -245,6 +245,48 @@
     }
 
     /**
+     * Read the current scroll position of a scroll container (element or
+     * window), shared by the floating save and scroll-down buttons.
+     * @param {HTMLElement|Window} scrollContainer
+     * @return {number}
+     */
+    function currentScrollTopOf(scrollContainer) {
+        return scrollContainer instanceof HTMLElement
+            ? scrollContainer.scrollTop
+            : (window.scrollY || window.pageYOffset);
+    }
+
+    /**
+     * Position a floating button at the bottom of the scroll container,
+     * either on the left or right side.
+     * @param {HTMLElement} button
+     * @param {HTMLElement|Window} scrollContainer
+     * @param {string} side 'left' or 'right'
+     */
+    function positionFloatingButton(button, scrollContainer, side) {
+        if (scrollContainer instanceof HTMLElement) {
+            var rect = scrollContainer.getBoundingClientRect();
+            button.style.bottom = (window.innerHeight - rect.bottom + 10) + 'px';
+            if (side === 'right') {
+                button.style.left = 'auto';
+                button.style.right = (window.innerWidth - rect.right + 10) + 'px';
+            } else {
+                button.style.right = 'auto';
+                button.style.left = (rect.left + 10) + 'px';
+            }
+        } else {
+            button.style.bottom = '10px';
+            if (side === 'right') {
+                button.style.left = 'auto';
+                button.style.right = '10px';
+            } else {
+                button.style.right = 'auto';
+                button.style.left = '10px';
+            }
+        }
+    }
+
+    /**
      * Show a floating save button at the bottom left of the modal while
      * the user scrolls down and the form's submit buttons are scrolled
      * out of view. A timer hides it again; scrolling down re-triggers the
@@ -276,23 +318,12 @@
         });
 
         function positionButton() {
-            // Anchor to the scroll container (modal box) or the viewport
-            var rect;
-            if (scrollContainer instanceof HTMLElement) {
-                rect = scrollContainer.getBoundingClientRect();
-                button.style.left = (rect.left + 10) + 'px';
-                button.style.bottom = (window.innerHeight - rect.bottom + 10) + 'px';
-            } else {
-                button.style.left = '10px';
-                button.style.bottom = '10px';
-            }
+            positionFloatingButton(button, scrollContainer, 'left');
         }
 
         var hideTimer = null;
         var lastTriggered = 0;
-        var lastScrollTop = scrollContainer instanceof HTMLElement
-            ? scrollContainer.scrollTop
-            : (window.scrollY || window.pageYOffset);
+        var lastScrollTop = currentScrollTopOf(scrollContainer);
 
         function hide() {
             if (hideTimer) {
@@ -314,18 +345,12 @@
             }, SAVE_HIDE_DELAY);
         }
 
-        function currentScrollTop() {
-            return scrollContainer instanceof HTMLElement
-                ? scrollContainer.scrollTop
-                : (window.scrollY || window.pageYOffset);
-        }
-
         function onScroll() {
             if (!submitButtons || !submitButtons.isConnected) {
                 return;
             }
 
-            var scrollTop = currentScrollTop();
+            var scrollTop = currentScrollTopOf(scrollContainer);
             var scrollingUp = scrollTop < lastScrollTop;
             lastScrollTop = scrollTop;
 
@@ -355,6 +380,119 @@
             } else {
                 // Scrolled back up to the regular submit buttons:
                 // hide the floating button immediately
+                hide();
+            }
+        }
+
+        if (scrollContainer instanceof HTMLElement) {
+            scrollContainer.addEventListener('scroll', onScroll);
+        } else {
+            window.addEventListener('scroll', onScroll, true);
+        }
+        window.addEventListener('resize', positionButton);
+    }
+
+    /**
+     * Floating scroll-down button at the bottom right of the modal, same
+     * presentation logic as the floating save button (slides up only on
+     * downward scrolling, hides on upward scrolling and after a timeout).
+     * Appears when the task settings below the editor are out of view;
+     * clicking scrolls smoothly down to them.
+     * @param {EasyMDE} editor
+     */
+    function setupScrollDown(editor) {
+        var container = editor.gui.toolbar.parentNode;
+        if (!container || container.querySelector('.nerdline-md-scroll-down')) {
+            return;
+        }
+
+        var form = editor.element.form || editor.element.closest('form');
+        if (!form) {
+            return;
+        }
+
+        // The task settings live in the secondary columns below the editor
+        var target = form.querySelector('.task-form-secondary-column');
+        var scrollContainer = findScrollContainer(container);
+
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'nerdline-md-scroll-down';
+        button.title = 'Scroll to task settings';
+        button.setAttribute('aria-label', 'Scroll to task settings');
+        button.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>';
+        container.appendChild(button);
+
+        button.addEventListener('click', function () {
+            if (target && target.isConnected) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else if (scrollContainer instanceof HTMLElement) {
+                scrollContainer.scrollTo({ top: scrollContainer.scrollHeight, behavior: 'smooth' });
+            } else {
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            }
+        });
+
+        function positionButton() {
+            positionFloatingButton(button, scrollContainer, 'right');
+        }
+
+        var hideTimer = null;
+        var lastTriggered = 0;
+        var lastScrollTop = currentScrollTopOf(scrollContainer);
+
+        function hide() {
+            if (hideTimer) {
+                clearTimeout(hideTimer);
+                hideTimer = null;
+            }
+            button.classList.remove(VISIBLE_CLASS);
+        }
+
+        function show() {
+            positionButton();
+            button.classList.add(VISIBLE_CLASS);
+            if (hideTimer) {
+                clearTimeout(hideTimer);
+            }
+            hideTimer = setTimeout(function () {
+                button.classList.remove(VISIBLE_CLASS);
+                hideTimer = null;
+            }, SAVE_HIDE_DELAY);
+        }
+
+        function onScroll() {
+            if (!target || !target.isConnected) {
+                return;
+            }
+
+            var scrollTop = currentScrollTopOf(scrollContainer);
+            var scrollingUp = scrollTop < lastScrollTop;
+            lastScrollTop = scrollTop;
+
+            // Any upward scrolling hides the button immediately
+            if (scrollingUp) {
+                hide();
+                return;
+            }
+
+            var box = target.getBoundingClientRect();
+            var viewTop = 0;
+            var viewBottom = window.innerHeight;
+            if (scrollContainer instanceof HTMLElement) {
+                var containerRect = scrollContainer.getBoundingClientRect();
+                viewTop = containerRect.top;
+                viewBottom = containerRect.bottom;
+            }
+            var targetVisible = box.bottom > viewTop && box.top < viewBottom;
+            if (!targetVisible) {
+                var now = Date.now();
+                if (!button.classList.contains(VISIBLE_CLASS) || now - lastTriggered > SAVE_HIDE_DELAY) {
+                    lastTriggered = now;
+                    show();
+                }
+            } else {
+                // Task settings are in view again: hide immediately
                 hide();
             }
         }
@@ -418,6 +556,7 @@
         queueHeadlineJump();
 
         setupFloatingSave(editor);
+        setupScrollDown(editor);
     }
 
     /**
