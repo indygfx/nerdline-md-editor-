@@ -88,6 +88,7 @@
             }
         }
 
+        console.log('[NerdlineMD] jumpToHeadlineInEditor - matching line:', target, 'of', lines);
         if (target === -1) {
             return false;
         }
@@ -113,11 +114,13 @@
      */
     function jumpFromGlobalVar() {
         var clicked = window.datacontentclicked;
+        console.log('[NerdlineMD] jumpFromGlobalVar - datacontentclicked:', clicked);
         if (!clicked) {
             return false;
         }
 
         var headlineText = htmlToPlainText(String(clicked));
+        console.log('[NerdlineMD] decoded headline text:', JSON.stringify(headlineText), 'editors registered:', editors.length);
         if (!headlineText) {
             return false;
         }
@@ -164,11 +167,13 @@
      * the jump cannot be tied to the attach step alone.
      */
     function queueHeadlineJump() {
+        console.log('[NerdlineMD] queueHeadlineJump called, datacontentclicked:', window.datacontentclicked);
         if (pendingJumpTimer) {
             clearTimeout(pendingJumpTimer);
         }
         pendingJumpTimer = setTimeout(function () {
             pendingJumpTimer = null;
+            console.log('[NerdlineMD] jump timer fired');
             if (jumpFromGlobalVar()) {
                 window.datacontentclicked = null;
             }
@@ -397,6 +402,7 @@
      */
     function scan() {
         var textareas = document.querySelectorAll('textarea[name="description"]');
+        console.log('[NerdlineMD] scan - description textareas found:', textareas.length, 'datacontentclicked:', window.datacontentclicked);
         for (var i = 0; i < textareas.length; i++) {
             attachEditor(textareas[i]);
         }
