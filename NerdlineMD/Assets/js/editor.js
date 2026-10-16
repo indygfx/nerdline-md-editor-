@@ -124,12 +124,40 @@
             return false;
         }
 
+        // Prune dead editors first: Kanboard rebuilds the modal DOM on
+        // re-opening, so closed modals leave orphaned EasyMDE instances in
+        // the registry. A jump into an orphan would silently "succeed"
+        // without any visible effect.
+        var live = [];
         for (var i = 0; i < editors.length; i++) {
-            if (jumpToHeadlineInEditor(editors[i], headlineText)) {
+            var element = editors[i].element;
+            if (element && element.isConnected) {
+                live.push(editors[i]);
+            }
+        }
+        editors.length = 0;
+        for (var j = 0; j < live.length; j++) {
+            editors.push(live[j]);
+        }
+        console.log('[NerdlineMD] live editors after prune:', editors.length);
+
+        // Prefer editors inside the currently open modal
+        var modalContent = document.getElementById('modal-content');
+
+        for (var k = 0; k < editors.length; k++) {
+            var el = editors[k].element;
+            var inModal = modalContent && modalContent.contains(el);
+            if (inModal && jumpToHeadlineInEditor(editors[k], headlineText)) {
                 return true;
             }
         }
-        console.log('[NerdlineMD] no matching headline line found in', editors.length, 'editor(s)');
+        // Fallback: any live editor (e.g. static page forms)
+        for (var m = 0; m < editors.length; m++) {
+            if (jumpToHeadlineInEditor(editors[m], headlineText)) {
+                return true;
+            }
+        }
+        console.log('[NerdlineMD] no matching headline line found in', editors.length, 'live editor(s)');
         return false;
     }
 
