@@ -294,6 +294,62 @@
      * @param {EasyMDE} editor
      */
     /**
+     * Shared fancy tooltip for the floating buttons. One element per
+     * page, positioned above the hovered button. The tooltip text is
+     * taken from the button's data-tooltip attribute.
+     */
+    var tooltipEl = null;
+    var tooltipHideTimer = null;
+
+    function getTooltip() {
+        if (!tooltipEl || !tooltipEl.isConnected) {
+            tooltipEl = document.createElement('div');
+            tooltipEl.className = 'nerdline-md-tooltip';
+            document.body.appendChild(tooltipEl);
+        }
+        return tooltipEl;
+    }
+
+    function showTooltip(button) {
+        var text = button.getAttribute('data-tooltip');
+        if (!text) {
+            return;
+        }
+        var tip = getTooltip();
+        tip.textContent = text;
+
+        var rect = button.getBoundingClientRect();
+        tip.style.left = '0';
+        tip.style.top = '0';
+        tip.classList.add('nerdline-md-tooltip-visible');
+
+        // Measure after making visible, then center above the button
+        var tipRect = tip.getBoundingClientRect();
+        tip.style.left = Math.round(rect.left + rect.width / 2 - tipRect.width / 2) + 'px';
+        tip.style.top = Math.round(rect.top - tipRect.height - 8) + 'px';
+    }
+
+    function hideTooltip() {
+        if (tooltipEl && tooltipEl.isConnected) {
+            tooltipEl.classList.remove('nerdline-md-tooltip-visible');
+        }
+    }
+
+    function attachTooltip(button) {
+        button.addEventListener('mouseenter', function () {
+            if (tooltipHideTimer) {
+                clearTimeout(tooltipHideTimer);
+                tooltipHideTimer = null;
+            }
+            showTooltip(button);
+        });
+        button.addEventListener('mouseleave', function () {
+            // Small delay so moving between the two buttons feels smooth
+            tooltipHideTimer = setTimeout(hideTooltip, 80);
+        });
+    }
+
+    /**
      * Shared wrapper for the floating buttons (save left, scroll-down
      * right) so both sit on the same line at the bottom of the editor
      * container, with the same sticky behavior.
@@ -328,6 +384,8 @@
         button.type = 'button';
         button.className = 'nerdline-md-floating-save';
         button.textContent = 'Save';
+        button.setAttribute('data-tooltip', '4lw4y5 54v3 y0ur W0rk');
+        attachTooltip(button);
         getFloatingButtonWrapper(container).appendChild(button);
 
         button.addEventListener('click', function () {
@@ -437,6 +495,8 @@
         button.className = 'nerdline-md-scroll-down';
         button.title = 'Scroll to task settings';
         button.setAttribute('aria-label', 'Scroll to task settings');
+        button.setAttribute('data-tooltip', 'G0 D0wn');
+        attachTooltip(button);
         button.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>';
         getFloatingButtonWrapper(container).appendChild(button);
 
