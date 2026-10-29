@@ -186,6 +186,102 @@
 }
 
 /*
+ * Markdown source editor overlay: plain-text view of the raw markdown
+ * (no syntax highlighting, no rendering) for inspecting, editing and
+ * pasting markdown like source code.
+ */
+.nerdline-md-source-editor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1200;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+}
+
+.nerdline-md-source-editor.nerdline-md-visible {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.2s ease;
+}
+
+.nerdline-md-source-editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+    font-weight: bold;
+}
+
+.nerdline-md-source-editor-close {
+    border: none;
+    background: none;
+    font-size: 1.4em;
+    line-height: 1;
+    cursor: pointer;
+    color: #555;
+    padding: 2px 6px;
+}
+
+.nerdline-md-source-editor-close:hover {
+    color: #000;
+}
+
+.nerdline-md-source-editor-area {
+    flex: 1;
+    width: 100%;
+    border: none;
+    outline: none;
+    resize: none;
+    padding: 12px;
+    font-family: Consolas, Monaco, monospace;
+    font-size: 0.95em;
+    line-height: 1.5;
+    box-sizing: border-box;
+}
+
+.nerdline-md-source-editor-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 8px 12px;
+    background: #f5f5f5;
+    border-top: 1px solid #ddd;
+}
+
+.nerdline-md-source-editor-button {
+    padding: 6px 16px;
+    background: #fff;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.95em;
+}
+
+.nerdline-md-source-editor-button:hover {
+    background: #f0f0f0;
+}
+
+.nerdline-md-source-editor-apply {
+    background: #3079ed;
+    color: #fff;
+    border-color: #3079ed;
+}
+
+.nerdline-md-source-editor-apply:hover {
+    background: #2563c9;
+}
+
+/*
  * Fancy JS tooltip for the floating buttons. One shared element,
  * positioned above the hovered button via fixed coordinates, with a
  * little speech-bubble arrow and a fade/slide transition.

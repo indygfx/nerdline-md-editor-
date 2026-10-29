@@ -180,6 +180,7 @@
     var HIDE_CLASS = 'nerdline-md-hidden';
     var VISIBLE_CLASS = 'nerdline-md-visible';
     var SAVE_HIDE_DELAY = 2500;
+    var SOURCE_EDITOR_CLASS = 'nerdline-md-source-editor';
 
     // Deferred headline jump. Runs on a short timer so the modal and the
     // editor are fully rendered when the CodeMirror position is measured.
@@ -635,6 +636,105 @@
     }
 
     /**
+     * Open a plain-text source editor overlay for the given EasyMDE
+     * instance: shows the raw markdown in a simple textarea (no
+     * syntax highlighting, no rendering) so raw markdown can be
+     * inspected, edited and pasted like source code. Apply writes the
+     * content back into the CodeMirror instance.
+     * @param {EasyMDE} editor
+     */
+    function openSourceEditor(editor) {
+        var container = editor.gui.toolbar.parentNode;
+
+        // One overlay per editor container, reused on re-open
+        var overlay = container.querySelector('.' + SOURCE_EDITOR_CLASS);
+        if (overlay) {
+            overlay.querySelector('textarea').value = editor.value();
+            overlay.classList.add(VISIBLE_CLASS);
+            overlay.querySelector('textarea').focus();
+            return;
+        }
+
+        overlay = document.createElement('div');
+        overlay.className = SOURCE_EDITOR_CLASS;
+
+        var header = document.createElement('div');
+        header.className = SOURCE_EDITOR_CLASS + '-header';
+
+        var title = document.createElement('span');
+        title.textContent = 'Markdown-Quelltext';
+        header.appendChild(title);
+
+        var closeButton = document.createElement('button');
+        closeButton.type = 'button';
+        closeButton.className = SOURCE_EDITOR_CLASS + '-close';
+        closeButton.setAttribute('aria-label', 'Close');
+        closeButton.innerHTML = '&times;';
+        header.appendChild(closeButton);
+
+        overlay.appendChild(header);
+
+        var area = document.createElement('textarea');
+        area.className = SOURCE_EDITOR_CLASS + '-area';
+        area.value = editor.value();
+        area.setAttribute('aria-label', 'Markdown source');
+        area.setAttribute('spellcheck', 'false');
+        overlay.appendChild(area);
+
+        var footer = document.createElement('div');
+        footer.className = SOURCE_EDITOR_CLASS + '-footer';
+
+        var cancelButton = document.createElement('button');
+        cancelButton.type = 'button';
+        cancelButton.className = SOURCE_EDITOR_CLASS + '-button';
+        cancelButton.textContent = 'Abbrechen';
+        footer.appendChild(cancelButton);
+
+        var applyButton = document.createElement('button');
+        applyButton.type = 'button';
+        applyButton.className = SOURCE_EDITOR_CLASS + '-button ' + SOURCE_EDITOR_CLASS + '-apply';
+        applyButton.textContent = 'Übernehmen';
+        footer.appendChild(applyButton);
+
+        overlay.appendChild(footer);
+        container.appendChild(overlay);
+
+        function close() {
+            overlay.classList.remove(VISIBLE_CLASS);
+        }
+
+        function apply() {
+            // Write back into CodeMirror (fires the change event that
+            // mirrors the value into the hidden textarea for Kanboard)
+            editor.codemirror.setValue(area.value);
+            close();
+        }
+
+        closeButton.addEventListener('click', close);
+        cancelButton.addEventListener('click', close);
+        applyButton.addEventListener('click', apply);
+
+        // Escape closes without applying
+        overlay.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                close();
+            }
+        });
+
+        // Ctrl+Enter applies
+        area.addEventListener('keydown', function (event) {
+            if (event.ctrlKey && event.key === 'Enter') {
+                event.preventDefault();
+                apply();
+            }
+        });
+
+        overlay.classList.add(VISIBLE_CLASS);
+        area.focus();
+    }
+
+    /**
      * Create an EasyMDE instance on the given textarea.
      * @param {HTMLTextAreaElement} textarea
      */
@@ -656,6 +756,14 @@
                 'unordered-list', 'ordered-list', 'quote', '|',
                 'link', 'image', 'code', 'table', '|',
                 'preview', 'side-by-side', '|',
+                {
+                    name: 'source',
+                    action: function (editor) {
+                        openSourceEditor(editor);
+                    },
+                    className: 'fa fa-file-code-o',
+                    title: 'Markdown-Quelltext (Ctrl+E)'
+                },
                 'guide'
             ],
             // GFM-flavored shortcuts that Kanboard users expect
