@@ -392,6 +392,43 @@
             form.submit();
         });
 
+        // Draft save button: submits the form in the background via
+        // fetch() so the modal stays open and editing continues.
+        var draftButton = document.createElement('button');
+        draftButton.type = 'button';
+        draftButton.className = 'nerdline-md-floating-draft';
+        draftButton.textContent = 'Zwischenspeichern';
+        draftButton.setAttribute('data-tooltip', 'S4v3 w17h0u7 cl051n6');
+        attachTooltip(draftButton);
+        getFloatingButtonWrapper(container).appendChild(draftButton);
+
+        var draftBusy = false;
+        draftButton.addEventListener('click', function () {
+            if (draftBusy) {
+                return;
+            }
+            draftBusy = true;
+            var originalText = draftButton.textContent;
+            draftButton.textContent = 'Speichert...';
+
+            // Serialize the current form state (the change handler has
+            // already mirrored the editor content into the textarea)
+            // and POST it to the form's action in the background.
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form)
+            }).then(function (response) {
+                draftButton.textContent = response.ok ? 'Gespeichert ✓' : 'Fehler ✗';
+            }).catch(function () {
+                draftButton.textContent = 'Fehler ✗';
+            }).then(function () {
+                setTimeout(function () {
+                    draftButton.textContent = originalText;
+                    draftBusy = false;
+                }, 2000);
+            });
+        });
+
         function positionButton() {
             positionFloatingButton(button, scrollContainer, 'left');
         }
@@ -410,11 +447,13 @@
                 hideTimer = null;
             }
             button.classList.remove(VISIBLE_CLASS);
+            draftButton.classList.remove(VISIBLE_CLASS);
         }
 
         function show() {
             positionButton();
             button.classList.add(VISIBLE_CLASS);
+            draftButton.classList.add(VISIBLE_CLASS);
             if (hideTimer) {
                 clearTimeout(hideTimer);
             }
@@ -424,19 +463,21 @@
                         return;
                     }
                     button.classList.remove(VISIBLE_CLASS);
+                    draftButton.classList.remove(VISIBLE_CLASS);
                     hideTimer = null;
                 }, SAVE_HIDE_DELAY);
             }
         }
 
-        button.addEventListener('mouseenter', function () {
+        function pauseHide() {
             hoverPaused = true;
             if (hideTimer) {
                 clearTimeout(hideTimer);
                 hideTimer = null;
             }
-        });
-        button.addEventListener('mouseleave', function () {
+        }
+
+        function resumeHide() {
             hoverPaused = false;
             if (button.classList.contains(VISIBLE_CLASS)) {
                 hideTimer = setTimeout(function () {
@@ -444,9 +485,15 @@
                         return;
                     }
                     button.classList.remove(VISIBLE_CLASS);
+                    draftButton.classList.remove(VISIBLE_CLASS);
                     hideTimer = null;
                 }, SAVE_HIDE_DELAY);
             }
+        }
+
+        [button, draftButton].forEach(function (btn) {
+            btn.addEventListener('mouseenter', pauseHide);
+            btn.addEventListener('mouseleave', resumeHide);
         });
 
         function onScroll() {
